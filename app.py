@@ -6,48 +6,30 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import pdfplumber
 from docx import Document
 from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail, Message
-from math import ceil # Make sure 'ceil' is imported for shortlist calculation
+from flask_mail import Mail, Message # For email sending
+from math import ceil
 
 # --- Flask App Configuration ---
-app = Flask(__name__)
-
-# --- IMPORTANT: SECRET KEY ---
-# In production, this should ONLY come from an environment variable.
-# For local development, it can have a fallback, but make it very strong.
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_super_secret_key_for_local_dev_only_change_me!')
-
-# --- UPLOAD FOLDER & DATABASE CONFIGURATION FOR PERSISTENCE ---
-# On a PaaS like Render, you typically configure a "Persistent Disk"
-# This path must match the "Mount Path" you set for your disk on Render (e.g., /var/data)
-# For local development, '/tmp/data' or a relative 'persistent_data' folder is a good fallback.
-PERSISTENT_DISK_MOUNT_PATH = os.environ.get('RENDER_DISK_PATH', os.path.join(os.path.abspath(os.path.dirname(__file__)), 'persistent_data'))
-
-# Ensure the base persistent directory exists
-os.makedirs(PERSISTENT_DISK_MOUNT_PATH, exist_ok=True)
-
-# Database URI now points inside the persistent disk
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(PERSISTENT_DISK_MOUNT_PATH, "site.db")}'
+app = Flask(_name_)
+app.secret_key = 'your_strong_random_secret_key_here_change_in_production_really!' # CHANGE THIS IN PRODUCTION
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db' # SQLite database file
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Upload folders also point inside the persistent disk
-UPLOAD_FOLDER_ROOT = os.path.join(PERSISTENT_DISK_MOUNT_PATH, 'uploads')
+# --- UPLOAD FOLDER CONFIGURATION ---
+BASE_DIR = os.path.abspath(os.path.dirname(_file_))
+UPLOAD_FOLDER_ROOT = os.path.join(BASE_DIR, 'uploads')
 app.config['UPLOAD_FOLDER_RESUMES'] = os.path.join(UPLOAD_FOLDER_ROOT, 'resumes')
 app.config['UPLOAD_FOLDER_JDS'] = os.path.join(UPLOAD_FOLDER_ROOT, 'jds')
 
-# Create upload directories if they don't exist
 os.makedirs(app.config['UPLOAD_FOLDER_RESUMES'], exist_ok=True)
 os.makedirs(app.config['UPLOAD_FOLDER_JDS'], exist_ok=True)
 
-
 # --- Flask-Mail Configuration ---
-# These *must* be set as environment variables in production (e.g., on Render dashboard)
-# For Gmail, you'll need an App Password: https://support.google.com/accounts/answer/185833
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER', 'masterpiece2124@gmail.com') # Fallback for local testing
-app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS', 'uwhb seyn rbkj bser') # Fallback for local testing
+app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER') or 'masterpiece2124@gmail.com'
+app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS') or 'uwhb seyn rbkj bser'
 app.config['MAIL_DEFAULT_SENDER'] = app.config['MAIL_USERNAME']
 
 db = SQLAlchemy(app)
@@ -62,7 +44,6 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(10), nullable=False) # 'hr' or 'user'
 
-    # Relationships
     posted_jobs = db.relationship('Job', backref='hr', lazy=True)
     applications = db.relationship('Application', backref='applicant', lazy=True)
 
@@ -72,7 +53,7 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def __repr__(self): # Corrected from _repr_ to __repr__
+    def _repr(self): # Fixed _repr to _repr_
         return f'<User {self.username} ({self.role})>'
 
 class Job(db.Model):
@@ -89,7 +70,7 @@ class Job(db.Model):
     hr_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     applications = db.relationship('Application', backref='job', lazy=True, cascade="all, delete-orphan")
 
-    def __repr__(self): # Corrected from _repr_ to __repr__
+    def _repr(self): # Fixed _repr to _repr_
         return f'<Job {self.title}>'
 
 class Application(db.Model):
@@ -102,10 +83,10 @@ class Application(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False)
 
-    def __repr__(self): # Corrected from _repr_ to __repr__
+    def _repr(self): # Fixed _repr to _repr_
         return f'<Application {self.id} for Job {self.job_id} by User {self.user_id}>'
 
-# --- Document Parsing Utility Functions (No changes needed) ---
+# --- Document Parsing Utility Functions ---
 def extract_text_from_pdf(file_path):
     try:
         with pdfplumber.open(file_path) as pdf:
@@ -136,7 +117,7 @@ def parse_document(file_path):
         return extract_text_from_docx(file_path)
     return ""
 
-# --- Resume Matching Logic (No changes needed) ---
+# --- Resume Matching Logic ---
 def calculate_match_score(resume_text, jd_skills):
     if not jd_skills:
         return 0.0
@@ -155,7 +136,7 @@ def calculate_match_score(resume_text, jd_skills):
     score = (matched_skills_count / len(jd_skills_list)) * 100
     return round(score, 2)
 
-# --- Email Sending Utility (No changes needed) ---
+# --- Email Sending Utility ---
 def send_notification_email(to_email, subject, body):
     try:
         msg = Message(subject, recipients=[to_email])
@@ -205,17 +186,21 @@ def register():
         confirm_password = request.form['confirm_password']
         role = request.form['role']
 
+        # Define allowed email domains
+        # You can customize this list based on your requirements
         ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'outlook.com', 'yahoo.com', 'yourcompany.com'] 
 
+        # --- New Email Domain Validation ---
         email_parts = email.split('@')
         if len(email_parts) != 2:
             flash('Invalid email format.', 'danger')
             return redirect(url_for('register'))
         
-        domain = email_parts[1].lower()
+        domain = email_parts[1].lower() # Get the domain part and convert to lowercase
         if domain not in ALLOWED_EMAIL_DOMAINS:
             flash(f'Email domain is not allowed. Please use an email from {", ".join(ALLOWED_EMAIL_DOMAINS)}.', 'danger')
             return redirect(url_for('register'))
+        # --- End New Email Domain Validation ---
 
         if password != confirm_password:
             flash('Passwords do not match!', 'danger')
@@ -237,6 +222,7 @@ def register():
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
+
 
 @app.route('/logout')
 def logout():
@@ -323,6 +309,7 @@ def view_applications(job_id):
         app_data = {
             'id': app_obj.id,
             'resume_path': app_obj.resume_path,
+            # Extract just the filename here
             'resume_filename': os.path.basename(app_obj.resume_path) if app_obj.resume_path else None,
             'match_score': app_obj.match_score,
             'status': app_obj.status,
@@ -332,6 +319,7 @@ def view_applications(job_id):
         }
         display_applications.append(app_data)
     
+    # Extract JD filename for the job object as well
     job_jd_filename = os.path.basename(job.jd_path) if job.jd_path else None
 
     return render_template('view_applications.html', job=job, applications=display_applications, job_jd_filename=job_jd_filename)
@@ -356,6 +344,7 @@ def process_shortlisting(job_id):
         if not jd_text:
             return jsonify({'status': 'error', 'message': 'Could not extract text from Job Description file. Cannot process shortlisting.'}), 500
 
+    # Calculate match scores for all applications if not already done or if status is 'applied'
     for app_obj in applications_for_job:
         if app_obj.match_score is None or app_obj.status == 'applied':
             resume_content = parse_document(app_obj.resume_path)
@@ -363,17 +352,33 @@ def process_shortlisting(job_id):
             app_obj.match_score = score
             db.session.add(app_obj)
 
-    db.session.commit()
+    db.session.commit() # Commit match scores before sorting
 
+    # Re-query applications to ensure the list reflects updated match_scores and is ready for sorting
     applications_for_job = Application.query.filter_by(job_id=job_id).order_by(Application.match_score.desc()).all()
 
-    PERCENTAGE_OVER_OPENINGS = 0.50 
+    # --- Start Modified Section for Shortlist Size Calculation ---
+    # Define the percentage increase for shortlisting.
+    # For example:
+    # 0.50 means 50% more (e.g., 10 openings -> 15 shortlisted)
+    # 1.00 means 100% more / double (e.g., 10 openings -> 20 shortlisted)
+    PERCENTAGE_OVER_OPENINGS = 0.50 # Adjust this value as needed (e.g., 0.25 for 25% more)
+    
+    # Calculate the shortlist size, rounding up to the nearest whole number.
+    # This ensures you always get enough candidates to meet the "extra percent" requirement.
     shortlist_size = ceil(job.openings * (1 + PERCENTAGE_OVER_OPENINGS))
     
+    # Ensure shortlist_size doesn't exceed the total number of applicants for the job.
     if shortlist_size > len(applications_for_job):
         shortlist_size = len(applications_for_job)
 
+    # Optional: You can add a minimum shortlist size if desired, e.g., to ensure
+    # you always shortlist at least 5 candidates, even for 1 opening.
+    # MIN_SHORTLIST_SIZE = 5
+    # shortlist_size = max(shortlist_size, MIN_SHORTLIST_SIZE)
+
     print(f"DEBUG: Job Openings: {job.openings}, Percentage Over: {PERCENTAGE_OVER_OPENINGS*100}%, Calculated Shortlist Size: {shortlist_size}")
+    # --- End Modified Section ---
     
     shortlisted_count = 0
     rejected_count = 0
@@ -408,12 +413,13 @@ def process_shortlisting(job_id):
                     f"The HR Team")
             send_notification_email(user.email, subject, body)
         
-        db.session.add(app_obj)
+        db.session.add(app_obj) # Mark for update
 
-    db.session.commit()
+    db.session.commit() # Commit status changes
 
     flash(f'Shortlisting processed. {shortlisted_count} shortlisted, {rejected_count} rejected.', 'success')
     return jsonify({'status': 'success', 'message': f'Shortlisting processed. {shortlisted_count} shortlisted, {rejected_count} rejected.'})
+
 
 @app.route('/jobs')
 def jobs():
@@ -454,7 +460,7 @@ def apply_job(job_id):
         return redirect(url_for('jobs'))
 
     filename = secure_filename(resume_file.filename)
-    unique_filename = f"{user_id}_{job_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
+    unique_filename = f"{user_id}{job_id}{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}" # Added _ between user_id and job_id
     resume_path = os.path.join(app.config['UPLOAD_FOLDER_RESUMES'], unique_filename)
     resume_file.save(resume_path)
     print(f"DEBUG: Saved resume to: {resume_path}")
@@ -514,7 +520,7 @@ def download_jd(filename):
 
 
 # --- Initial Database Setup and Running the App ---
-if __name__ == '__main__':
+if _name_ == '_main_':
     with app.app_context():
         db.create_all()
 
