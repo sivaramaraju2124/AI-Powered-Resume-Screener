@@ -10,7 +10,7 @@ from flask_mail import Mail, Message # For email sending
 from math import ceil
 
 # --- Flask App Configuration ---
-app = Flask(_name_)
+app = Flask(__name__)
 app.secret_key = 'your_strong_random_secret_key_here_change_in_production_really!' # CHANGE THIS IN PRODUCTION
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db' # SQLite database file
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -520,7 +520,7 @@ def download_jd(filename):
 
 
 # --- Initial Database Setup and Running the App ---
-if _name_ == '_main_':
+if __name__ == '__main__':
     with app.app_context():
         db.create_all()
 
