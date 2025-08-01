@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db' # SQLite database fi
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- UPLOAD FOLDER CONFIGURATION ---
-BASE_DIR = os.path.abspath(os.path.dirname(_file_))
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER_ROOT = os.path.join(BASE_DIR, 'uploads')
 app.config['UPLOAD_FOLDER_RESUMES'] = os.path.join(UPLOAD_FOLDER_ROOT, 'resumes')
 app.config['UPLOAD_FOLDER_JDS'] = os.path.join(UPLOAD_FOLDER_ROOT, 'jds')
