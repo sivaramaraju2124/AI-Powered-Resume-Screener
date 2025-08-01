@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}My Applications - AI Resume Screener{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-alt me-2"></i>My Job Applications</h5>
+            </div>
+            <div class="card-body">
+                {% if applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Company</th>
+                                    <th>Applied On</th>
+                                    <th>Match Score</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                <tr>
+                                    <td><strong>{{ app.job_title }}</strong></td>
+                                    <td>{{ app.company_name or 'N/A' }}</td>
+                                    <td>{{ app.applied_at.strftime('%d %b %Y') }}</td>
+                                    <td>
+                                        {% if app.match_score is not none %}
+                                            <span class="badge bg-info score-badge">{{ "%.2f"|format(app.match_score) }}%</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary score-badge">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if app.status == 'shortlisted' %}
+                                            <span class="badge status-shortlisted">Shortlisted</span>
+                                        {% elif app.status == 'rejected' %}
+                                            <span class="badge status-rejected">Rejected</span>
+                                        {% else %}
+                                            <span class="badge status-applied">Applied</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">You haven't applied for any jobs yet</h5>
+                        <p class="text-muted">Browse available jobs and submit your first application!</p>
+                        <a href="{{ url_for('jobs') }}" class="btn btn-primary mt-3">
+                            <i class="fas fa-briefcase me-2"></i>View Jobs
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

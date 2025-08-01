@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Home | AI Resume Screener{% endblock %}
+
+{% block content %}
+<div class="hero-section py-5 text-white text-center">
+    <div class="container">
+        <h1 class="hero-title mb-3">
+            <i class="fas fa-brain me-3"></i>AI Resume Screener
+        </h1>
+        <p class="hero-subtitle fs-5">
+            Intelligent Resume Screening & Candidate Matching System
+        </p>
+        
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-8">
+                <div class="row g-4">
+                    <!-- HR Card -->
+                    <div class="col-md-6">
+                        <div class="card feature-card h-100 shadow">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
+                                <h4 class="card-title">For HR Professionals</h4>
+                                <p class="card-text">Post jobs, upload JDs, and find the best candidates with AI-powered matching</p>
+                                <a href="{{ url_for('login') }}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login as HR
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Job Seeker Card -->
+                    <div class="col-md-6">
+                        <div class="card feature-card h-100 shadow">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-user-graduate fa-3x text-success mb-3"></i>
+                                <h4 class="card-title">For Job Seekers</h4>
+                                <p class="card-text">Browse jobs, apply with your resume, and get matched with perfect opportunities</p>
+                                <a href="{{ url_for('login') }}" class="btn btn-success mt-2">
+                                    <i class="fas fa-search me-2"></i>Find Jobs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="text-white">
+                        Don't have an account? 
+                        <a href="{{ url_for('register') }}" class="text-white fw-bold text-decoration-underline">
+                            Register here
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12 text-center mb-5">
+            <h2 class="text-dark mb-4">How It Works</h2>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card text-center shadow-sm h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-upload fa-2x text-primary mb-3"></i>
+                    <h5 class="card-title">1. Upload & Post</h5>
+                    <p class="card-text">HRs post jobs with JDs, candidates upload resumes</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card text-center shadow-sm h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-robot fa-2x text-warning mb-3"></i>
+                    <h5 class="card-title">2. AI Matching</h5>
+                    <p class="card-text">Our AI analyzes and scores resume-JD compatibility</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card text-center shadow-sm h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-envelope fa-2x text-success mb-3"></i>
+                    <h5 class="card-title">3. Auto Notification</h5>
+                    <p class="card-text">Automatic shortlisting and email notifications sent</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Applications for {{ job.title }} - AI Resume Screener{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-briefcase me-2"></i>Applications for "{{ job.title }}"</h5>
+                <button class="btn btn-primary" onclick="processShortlisting('{{ job.id }}')">
+                    <i class="fas fa-cogs me-2"></i>Process Shortlisting
+                </button>
+            </div>
+            <div class="card-body">
+                <p><strong>Job Description:</strong> {{ job.description }}</p>
+                <p><strong>Skills Required:</strong> {{ job.skills_required }}</p>
+                <p><strong>Experience:</strong> {{ job.experience_required }}</p>
+                <p><strong>Openings:</strong> <span class="badge bg-info">{{ job.openings }}</span></p>
+                {# Add JD Download link here #}
+                {% if job.jd_path %}
+                <p class="mt-3">
+                    <strong>Job Description File:</strong>
+                    <a href="{{ url_for('download_jd', filename=job_jd_filename) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-download me-1"></i>Download JD
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-users me-2"></i>Applicants (Total: {{ applications | length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Applicant Name</th>
+                                    <th>Email</th>
+                                    <th>Match Score</th>
+                                    <th>Resume</th>
+                                    <th>Status</th>
+                                    <th>Applied On</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                <tr>
+                                    <td><strong>{{ app.user_name }}</strong></td>
+                                    <td>{{ app.user_email }}</td>
+                                    <td>
+                                        {% if app.match_score is not none %}
+                                            <span class="badge bg-info score-badge">{{ "%.2f"|format(app.match_score) }}%</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary score-badge">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if app.resume_path %}
+                                            <a href="{{ url_for('download_resume', filename=app.resume_filename) }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                                                <i class="fas fa-download me-1"></i>Resume
+                                            </a>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if app.status == 'shortlisted' %}
+                                            <span class="badge status-shortlisted">Shortlisted</span>
+                                        {% elif app.status == 'rejected' %}
+                                            <span class="badge status-rejected">Rejected</span>
+                                        {% else %}
+                                            <span class="badge status-applied">Applied</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ app.applied_at.strftime('%d %b %Y %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No applications for this job yet</h5>
+                        <p class="text-muted">Share the job posting to attract more candidates!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function processShortlisting(jobId) {
+        if (confirm('Are you sure you want to process shortlisting for this job? This will send emails to applicants based on their match score and the number of openings.')) {
+            fetch(`/process_shortlisting/${jobId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    window.location.reload(); // Reload to reflect status changes
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during shortlisting.');
+            });
+        }
+    }
+</script>
+{% endblock %}

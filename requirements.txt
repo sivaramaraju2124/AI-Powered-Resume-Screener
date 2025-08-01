@@ -1,0 +1,8 @@
+Flask
+python-docx
+PyMuPDF
+scikit-learn
+spacy
+pdfplumber
+flask_sqlalchemy
+flask_mail

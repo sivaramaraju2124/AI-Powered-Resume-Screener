@@ -1,0 +1,110 @@
+# .gitignore for Flask Web Application
+
+# ----------------------------------------------------
+# 1. Python specific files
+# ----------------------------------------------------
+# Byte-compiled / optimized / cached files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+# C extensions
+*.so
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+# Environments
+.env                 # For python-dotenv, specific environment variables
+venv/                # Virtual environment directory (common name)
+env/                 # Virtual environment directory (another common name)
+# myenv/             # If you named your virtual environment something else, add it here too
+pip-wheel-metadata/
+.tox/
+.nox/
+.venv/
+
+# Pytest and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.nox/
+
+# Thumbs.db, .DS_Store, etc.
+.DS_Store            # macOS system files
+Thumbs.db            # Windows thumbnail cache
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump          # Linux core dumps
+
+# ----------------------------------------------------
+# 2. Database files
+# ----------------------------------------------------
+*.db                 # Generic SQLite database files
+*.sqlite             # Specific SQLite file extension
+*.sqlite3            # Another specific SQLite file extension
+/instance/*.db       # Flask's default 'instance' folder for databases
+/instance/*.sqlite
+/instance/*.sqlite3
+site.db              # Explicitly ignore your main SQLite database file name
+
+# ----------------------------------------------------
+# 3. Uploaded / User-generated files (CRITICAL for security & repository size)
+# ----------------------------------------------------
+# This ignores the 'uploads' directory completely.
+# Since 'resumes' and 'jds' are inside 'uploads', they will also be ignored.
+uploads/
+
+# If you ever place a 'resumes' or 'jds' folder directly in the root:
+# resumes/
+# jds/
+
+# ----------------------------------------------------
+# 4. IDE and Editor specific files
+# ----------------------------------------------------
+.vscode/             # VS Code specific settings (optional, but often preferred to ignore)
+.idea/               # IntelliJ / PyCharm project files
+*.sublime-project    # Sublime Text project files
+*.sublime-workspace  # Sublime Text workspace files
+*.komodoproject      # Komodo IDE project files
+*.kdev4              # KDevelop project files
+*.sln                # Visual Studio solution files
+*.suo                # Visual Studio user options
+
+# ----------------------------------------------------
+# 5. Temporary / Log files
+# ----------------------------------------------------
+*.log
+*.tmp
+*.temp
+# Specific temporary files you mentioned:
+templates/temp.py    # Ignore this specific temporary file
+
+# ----------------------------------------------------
+# 6. Sensitive information / Configuration
+# ----------------------------------------------------
+# Important: Do NOT commit files containing API keys, database credentials, etc.
+# If you use python-dotenv or similar, ignore your .env file
+.env
+.flaskenv # Flask specific environment config
+
+
+# ----------------------------------------------------
+# 7. Deployment specific files (if applicable)
+# ----------------------------------------------------
+# Docker files if you later containerize your app
+# Dockerfile*.bak
+# *.dockerignore.bak
+
+# Render / Heroku build artifacts
+# These are typically created by the platform, but good to ensure they're ignored if found locally
+.heroku/
