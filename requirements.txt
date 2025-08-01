@@ -6,3 +6,4 @@ spacy
 pdfplumber
 flask_sqlalchemy
 flask_mail
+gunicorn
